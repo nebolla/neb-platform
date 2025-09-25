@@ -1,0 +1,8 @@
+{
+  "name":"Nebolla Codespace",
+  "features":{"ghcr.io/devcontainers/features/node:1":{"version":"20"}},
+  "dockerComposeFile":["../../docker-compose.yml"],
+  "service":"app","workspaceFolder":"/workspaces/neb-platform",
+  "postCreateCommand":"corepack enable && pnpm i && pnpm -w run postinstall",
+  "forwardPorts":[3000,5432,6379]
+}
