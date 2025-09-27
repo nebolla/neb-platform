@@ -1,0 +1,5 @@
+@import "tailwindcss";
+/* base tweaks */
+html, body { height: 100%; }
+body { margin: 0; }
+a { text-decoration: underline; }

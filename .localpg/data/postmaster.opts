@@ -1,0 +1,1 @@
+/usr/lib/postgresql/16/bin/postgres "-D" ".localpg/data" "-p" "5434" "-c" "listen_addresses=localhost" "-c" "unix_socket_directories=/tmp"

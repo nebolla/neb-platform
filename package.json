@@ -1,0 +1,44 @@
+{
+  "name": "@nebolla/neb-platform",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "scripts": {
+    "postinstall": "prisma generate --schema packages/db/schema.prisma || true",
+    "dev": "pnpm --filter web dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "db:start": "node -e \"const {spawnSync}=require('child_process');spawnSync(process.env.PGCTL||'/usr/lib/postgresql/16/bin/pg_ctl',['-D','.localpg/data','-o','-p 5434 -c listen_addresses=localhost -c unix_socket_directories=/tmp','-l','.localpg/logfile','start'],{stdio:'inherit'})\"",
+    "db:stop": "node -e \"const {spawnSync}=require('child_process');spawnSync(process.env.PGCTL||'/usr/lib/postgresql/16/bin/pg_ctl',['-D','.localpg/data','stop','-m','fast'],{stdio:'inherit'})\"",
+    "db:status": "pg_isready -h 127.0.0.1 -p 5434 || true && tail -n 5 .localpg/logfile || true",
+    "db:logs": "tail -n 200 .localpg/logfile"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/node": "24.5.2",
+    "eslint": "9.36.0",
+    "prettier": "3.6.2",
+    "ts-node": "10.9.2",
+    "turbo": "2.5.8",
+    "typescript": "5.9.2"
+  },
+  "dependencies": {
+    "@auth/prisma-adapter": "^2.10.0",
+    "@aws-sdk/client-s3": "^3.896.0",
+    "@aws-sdk/client-ses": "^3.896.0",
+    "@aws-sdk/s3-presigned-post": "^3.896.0",
+    "@prisma/client": "^6.16.2",
+    "bcrypt": "^6.0.0",
+    "bullmq": "^5.58.7",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "ioredis": "^5.8.0",
+    "jsonwebtoken": "^9.0.2",
+    "next-auth": "^4.24.11",
+    "openai": "^5.23.0",
+    "prisma": "^6.16.2",
+    "reactflow": "^11.11.4",
+    "uuid": "^13.0.0",
+    "zod": "^3.23.8"
+  }
+}

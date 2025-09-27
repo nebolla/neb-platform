@@ -1,0 +1,30 @@
+"use client"
+import { useState } from "react"
+import { signIn } from "next-auth/react"
+
+export default function LoginPage(){
+  const [email,setEmail]=useState(""); const [password,setPassword]=useState("")
+  const [msg,setMsg]=useState<string|null>(null)
+  async function submit(e:React.FormEvent){
+    e.preventDefault(); setMsg("Signing in…")
+    const origin = typeof window !== "undefined" ? window.location.origin : ""
+    await signIn("credentials", {
+      redirect: true, email, password,
+      callbackUrl: origin + "/dashboard"
+    })
+  }
+  return (
+    <main style={{maxWidth:420, margin:"3rem auto", fontFamily:"ui-sans-serif"}}>
+      <h1 style={{fontSize:28, marginBottom:12}}>Partner Login</h1>
+      <form onSubmit={submit}>
+        <label>Email</label><input type="email" value={email} onChange={e=>setEmail(e.target.value)} required
+          style={{display:"block", width:"100%", padding:8, margin:"6px 0 12px"}} />
+        <label>Password</label><input type="password" value={password} onChange={e=>setPassword(e.target.value)} required
+          style={{display:"block", width:"100%", padding:8, margin:"6px 0 12px"}} />
+        <button type="submit" style={{padding:"10px 14px", border:"1px solid #000"}}>Login</button>
+      </form>
+      <p style={{marginTop:24}}><a href="/partner/register">Create account</a></p>
+      <p style={{marginTop:12, color:"#555"}}>{msg}</p>
+    </main>
+  )
+}

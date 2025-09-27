@@ -1,0 +1,165 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  PARTNER
+  ADMIN
+  SUPER_ADMIN
+}
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum Chain {
+  TRC20
+  BEP20
+}
+
+enum LedgerType {
+  CREDIT
+  DEBIT
+}
+
+model User {
+  id                String             @id @default(cuid())
+  partnerId         String             @unique
+  email             String             @unique
+  name              String?
+  passwordHash      String
+  role              Role               @default(PARTNER)
+  referralCode      String             @unique
+  referrerId        String?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  wallets           Wallet[]
+  purchases         Purchase[]
+  withdrawals       Withdrawal[]
+  phone             String?
+  addressLine1      String?
+  addressLine2      String?
+  city              String?
+  state             String?
+  postalCode        String?
+  country           String?
+  dob               DateTime?
+  notifications     Notification[]     @relation("UserNotifications")
+  notificationReads NotificationRead[] @relation("UserNotificationReads")
+}
+
+model Wallet {
+  id      String         @id @default(cuid())
+  userId  String
+  user    User           @relation(fields: [userId], references: [id])
+  type    String // NEB | INCOME
+  balance Decimal        @default(0) @db.Decimal(38, 2)
+  ledgers WalletLedger[]
+
+  @@unique([userId, type])
+}
+
+model WalletLedger {
+  id        String     @id @default(cuid())
+  walletId  String
+  wallet    Wallet     @relation(fields: [walletId], references: [id])
+  type      LedgerType
+  event     String
+  amount    Decimal    @db.Decimal(38, 2)
+  meta      Json?
+  createdAt DateTime   @default(now())
+}
+
+model Purchase {
+  id         String         @id @default(cuid())
+  userId     String
+  user       User           @relation(fields: [userId], references: [id])
+  amountUsd  Decimal        @db.Decimal(38, 2)
+  chain      Chain
+  proofUrl   String
+  txHash     String?
+  status     PurchaseStatus @default(PENDING)
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime       @default(now())
+}
+
+model Withdrawal {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  amountReq   Decimal   @db.Decimal(38, 2)
+  feePercent  Decimal   @default(5.00) @db.Decimal(5, 2)
+  feeAmount   Decimal   @default(0) @db.Decimal(38, 2)
+  amountPaid  Decimal   @default(0) @db.Decimal(38, 2)
+  chain       Chain
+  toAddress   String
+  status      String    @default("PENDING")
+  processedBy String?
+  processedAt DateTime?
+  createdAt   DateTime  @default(now())
+}
+
+model PoolAccount {
+  id      String       @id @default(cuid())
+  name    String       @unique // VIP | ELITE | WITHDRAWAL_FEE
+  balance Decimal      @default(0) @db.Decimal(38, 2)
+  ledgers PoolLedger[]
+}
+
+model PoolLedger {
+  id        String      @id @default(cuid())
+  poolId    String
+  pool      PoolAccount @relation(fields: [poolId], references: [id])
+  event     String // ACCRUAL | DISTRIBUTION | FEE
+  amount    Decimal     @db.Decimal(38, 2)
+  meta      Json?
+  createdAt DateTime    @default(now())
+}
+
+model EventOutbox {
+  id        String   @id @default(cuid())
+  type      String
+  payload   Json
+  status    String   @default("PENDING")
+  retries   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Setting {
+  key String @id
+  val String
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  title     String
+  body      String
+  audience  String   @default("ALL") // "ALL" or "USER"
+  userId    String?
+  user      User?    @relation(name: "UserNotifications", fields: [userId], references: [id])
+
+  // back relation for reads
+  reads NotificationRead[] @relation("NotificationReads")
+}
+
+model NotificationRead {
+  id             String   @id @default(cuid())
+  userId         String
+  notificationId String
+  readAt         DateTime @default(now())
+
+  user         User         @relation(name: "UserNotificationReads", fields: [userId], references: [id])
+  notification Notification @relation(name: "NotificationReads", fields: [notificationId], references: [id])
+
+  @@unique([userId, notificationId])
+}

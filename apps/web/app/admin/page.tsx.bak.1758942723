@@ -1,0 +1,62 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/prisma"
+import { PurchaseStatus } from "@prisma/client"
+
+export const dynamic = "force-dynamic"
+
+export default async function AdminPage(){
+  const session = await getServerSession(authOptions)
+  if(!session || (session.user.role!=="SUPER_ADMIN" && session.user.role!=="ADMIN")){
+    return (<main style={{padding:"2rem"}}><p>Admins only. Please login with admin account.</p></main>)
+  }
+
+  const items = await prisma.purchase.findMany({
+    where:{ status: PurchaseStatus.PENDING },
+    include:{ user:true }, orderBy:{ createdAt:"desc" }
+  })
+  const wds = await prisma.withdrawal.findMany({
+    where:{ status: PurchaseStatus.PENDING },
+    include:{ user:true }, orderBy:{ createdAt:"desc" }
+  })
+  const vip = await prisma.poolAccount.findUnique({ where:{ name:"VIP" }})
+  const elite = await prisma.poolAccount.findUnique({ where:{ name:"ELITE" }})
+  const wfee = await prisma.poolAccount.findUnique({ where:{ name:"WITHDRAWAL_FEE" }})
+
+  return (
+    <main style={{padding:"2rem", fontFamily:"ui-sans-serif"}}>
+      <h1>Approvals Queue</h1>
+      <p style={{margin:"8px 0"}}>VIP Pool: ${String(vip?.balance||0)} &nbsp; | &nbsp; ELITE Pool: ${String(elite?.balance||0)} &nbsp; | &nbsp; Service Fee Pool: ${String(wfee?.balance||0)}</p>
+
+      <h2 style={{marginTop:16}}>Purchases</h2>
+      {items.length===0 && <p>No pending purchases.</p>}
+      <ul>
+        {items.map(p=>(
+          <li key={p.id} style={{border:"1px solid #ddd", padding:12, margin:"12px 0"}}>
+            <b>{p.user.partnerId}</b> • ${String(p.amountUsd)} • {p.chain}
+            <div style={{marginTop:6}}>Proof: <a href={p.proofUrl} target="_blank">view</a></div>
+            <details style={{marginTop:6}}><summary>Preview</summary>
+              <img src={p.proofUrl} alt="proof" style={{maxWidth:240,border:"1px solid #eee",marginTop:6}} />
+            </details>
+            <form action={`/api/admin/purchases/${p.id}/approve`} method="post" style={{marginTop:8}}>
+              <button style={{padding:"8px 12px", border:"1px solid #000"}}>Approve</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+
+      <h2 style={{marginTop:16}}>Withdrawals</h2>
+      {wds.length===0 && <p>No pending withdrawals.</p>}
+      <ul>
+        {wds.map(w=>(
+          <li key={w.id} style={{border:"1px solid #ddd", padding:12, margin:"12px 0"}}>
+            <b>{w.user.partnerId}</b> • Request: ${String(w.amountReq)} • {w.chain} → {w.toAddress}
+            <form action={`/api/admin/withdrawals/${w.id}/approve`} method="post" style={{marginTop:8}}>
+              <button style={{padding:"8px 12px", border:"1px solid #000"}}>Approve & Debit (5% fee)</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}

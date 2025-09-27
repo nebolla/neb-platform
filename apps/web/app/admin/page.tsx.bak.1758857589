@@ -1,0 +1,37 @@
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import { PrismaClient, PurchaseStatus } from "@prisma/client"
+
+export const dynamic = "force-dynamic"
+
+export default async function AdminPage(){
+  const session = await getServerSession(authOptions)
+  if(!session || (session.user.role!=="SUPER_ADMIN" && session.user.role!=="ADMIN")){
+    return (<main style={{padding:"2rem"}}><p>Admins only. Please login with admin account.</p></main>)
+  }
+  const prisma = new PrismaClient()
+  const items = await prisma.purchase.findMany({
+    where:{ status: PurchaseStatus.PENDING },
+    include:{ user:true }, orderBy:{ createdAt:"desc" }
+  })
+  const vip = await prisma.poolAccount.findUnique({ where:{ name:"VIP" }})
+  const elite = await prisma.poolAccount.findUnique({ where:{ name:"ELITE" }})
+  return (
+    <main style={{padding:"2rem", fontFamily:"ui-sans-serif"}}>
+      <h1>Approvals Queue</h1>
+      <p style={{margin:"8px 0"}}>VIP Pool: ${String(vip?.balance||0)} &nbsp; | &nbsp; ELITE Pool: ${String(elite?.balance||0)}</p>
+      {items.length===0 && <p>No pending purchases.</p>}
+      <ul>
+        {items.map(p=>(
+          <li key={p.id} style={{border:"1px solid #ddd", padding:12, margin:"12px 0"}}>
+            <b>{p.user.partnerId}</b> • ${String(p.amountUsd)} • {p.chain}
+            <div style={{marginTop:6}}>Proof: <a href={p.proofUrl} target="_blank">view</a></div>
+            <form action={`/api/admin/purchases/${p.id}/approve`} method="post" style={{marginTop:8}}>
+              <button style={{padding:"8px 12px", border:"1px solid #000"}}>Approve</button>
+            </form>
+          </li>
+        ))}
+      </ul>
+    </main>
+  )
+}
