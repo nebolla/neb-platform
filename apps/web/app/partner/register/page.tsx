@@ -1,67 +1,60 @@
-"use client"
-import { useState, useEffect } from "react"
-import { useSearchParams, useRouter } from "next/navigation"
+export const dynamic = "force-dynamic"
 
 export default function RegisterPage(){
-  const params = useSearchParams(); const router = useRouter()
-  const [name,setName]=useState("")
-  const [email,setEmail]=useState("")
-  const [password,setPassword]=useState("")
-  const [phone,setPhone]=useState("")
-  const [addressLine1,setA1]=useState("")
-  const [addressLine2,setA2]=useState("")
-  const [city,setCity]=useState("")
-  const [state,setState]=useState("")
-  const [postalCode,setZip]=useState("")
-  const [country,setCountry]=useState("")
-  const [dateOfBirth,setDob]=useState("")
-  const [referralCode,setRef]=useState("")
-  const [msg,setMsg]=useState<string|null>(null)
-
-  useEffect(()=>{ const r=params.get("ref"); if(r) setRef(r.toUpperCase()) },[params])
-
-  async function submit(e:React.FormEvent){
-    e.preventDefault(); setMsg("Creating account…")
-    const res = await fetch("/api/auth/register", {
-      method:"POST", headers:{ "Content-Type":"application/json" },
-      body: JSON.stringify({
-        name, email, password, referralCode,
-        phone, addressLine1, addressLine2, city, state, postalCode, country,
-        dateOfBirth
-      })
-    })
-    const j = await res.json()
-    if(!res.ok){ setMsg(j.error||"Error"); return }
-    setMsg("Registered! Redirecting to login…")
-    setTimeout(()=>router.push("/partner/login"), 900)
-  }
-
-  const FI = (p:any)=><input {...p} style={{display:"block", width:"100%", padding:8, margin:"6px 0 12px"}} />
-
   return (
-    <main style={{maxWidth:560, margin:"3rem auto", fontFamily:"ui-sans-serif"}}>
-      <h1 style={{fontSize:28, marginBottom:12}}>Become a Partner</h1>
-      <form onSubmit={submit}>
-        <label>Full Name</label><FI value={name} onChange={(e:any)=>setName(e.target.value)} required />
-        <label>Email Address</label><FI type="email" value={email} onChange={(e:any)=>setEmail(e.target.value)} required />
-        <label>Password</label><FI type="password" value={password} onChange={(e:any)=>setPassword(e.target.value)} required />
-        <label>Mobile Number</label><FI value={phone} onChange={(e:any)=>setPhone(e.target.value)} required />
-        <label>Address Line 1</label><FI value={addressLine1} onChange={(e:any)=>setA1(e.target.value)} required />
-        <label>Address Line 2 (optional)</label><FI value={addressLine2} onChange={(e:any)=>setA2(e.target.value)} />
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}}>
-          <div><label>City</label><FI value={city} onChange={(e:any)=>setCity(e.target.value)} required /></div>
-          <div><label>State/Province</label><FI value={state} onChange={(e:any)=>setState(e.target.value)} required /></div>
+    <main style={{padding:"2rem", fontFamily:"ui-sans-serif"}}>
+      <h1>Become a Partner</h1>
+
+      <form action="/api/partner/register" method="post" style={{maxWidth:560}}>
+        <label>Name</label>
+        <input name="name" required style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+
+        <label>Email</label>
+        <input type="email" name="email" required style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+
+        <label>Mobile</label>
+        <input name="phone" required style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+
+        <label>Password</label>
+        <input type="password" name="password" required style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+
+        <label>Address Line 1</label>
+        <input name="address1" required style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+        <label>Address Line 2 (optional)</label>
+        <input name="address2" style={{display:"block",padding:8,margin:"6px 0 12px",width:"100%"}} />
+
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
+          <div>
+            <label>City</label>
+            <input name="city" required style={{display:"block",padding:8,marginTop:6,width:"100%"}} />
+          </div>
+          <div>
+            <label>State/Province</label>
+            <input name="state" required style={{display:"block",padding:8,marginTop:6,width:"100%"}} />
+          </div>
         </div>
-        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:12}}>
-          <div><label>ZIP/Postal Code</label><FI value={postalCode} onChange={(e:any)=>setZip(e.target.value)} required /></div>
-          <div><label>Country</label><FI value={country} onChange={(e:any)=>setCountry(e.target.value)} required /></div>
+
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12, marginTop:12}}>
+          <div>
+            <label>ZIP/Postal Code</label>
+            <input name="zip" required style={{display:"block",padding:8,marginTop:6,width:"100%"}} />
+          </div>
+          <div>
+            <label>Country</label>
+            <input name="country" required style={{display:"block",padding:8,marginTop:6,width:"100%"}} />
+          </div>
         </div>
-        <label>Date of Birth</label><FI type="date" value={dateOfBirth} onChange={(e:any)=>setDob(e.target.value)} required />
-        <label>Referral Code (optional)</label><FI value={referralCode} onChange={(e:any)=>setRef(e.target.value)} />
-        <button type="submit" style={{padding:"10px 14px", border:"1px solid #000"}}>Register</button>
+
+        <label style={{marginTop:12,display:'block'}}>Date of Birth</label>
+        <input type="date" name="dob" required style={{display:"block",padding:8,margin:"6px 0 12px"}} />
+
+        <label>Referral Code (optional)</label>
+        <input name="referralCode" style={{display:"block",padding:8,margin:"6px 0 12px"}} />
+
+        <button style={{padding:"8px 12px", border:"1px solid #000"}}>Register</button>
       </form>
-      <p style={{marginTop:12, color:"#b00"}}>{msg}</p>
-      <p style={{marginTop:24}}>Already a Partner? <a href="/partner/login">Login</a></p>
+
+      <p style={{marginTop:12}}>Already a Partner? <a href="/partner/login">Login</a></p>
     </main>
   )
 }
