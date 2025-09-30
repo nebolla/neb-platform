@@ -1,1 +1,16 @@
 node_modules
+
+# 🔒 secrets & local artifacts
+.env
+.env.local
+.env.*.local
+*.env*
+backups/
+*.sql
+*.sql.gz
+
+# build caches / junk
+.next/
+node_modules/
+next
+web@0.1.0
