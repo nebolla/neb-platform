@@ -28,13 +28,19 @@
       {
         "name": "next"
       }
+    ],
+    "types": [
+      "node",
+      "next",
+      "next/types"
     ]
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "next-env.d.ts",
-    ".next/types/**/*.ts"
+    ".next/types/**/*.ts",
+    "types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

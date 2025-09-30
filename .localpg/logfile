@@ -145,3 +145,40 @@
 2025-09-27 07:51:48.825 UTC [5554] LOG:  checkpoint complete: wrote 4 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.002 s, total=0.008 s; sync files=4, longest=0.002 s, average=0.001 s; distance=4541 kB, estimate=4541 kB; lsn=0/64E98E8, redo lsn=0/64E98B0
 2025-09-27 07:56:48.900 UTC [5554] LOG:  checkpoint starting: time
 2025-09-27 07:56:49.612 UTC [5554] LOG:  checkpoint complete: wrote 8 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.704 s, sync=0.003 s, total=0.712 s; sync files=8, longest=0.003 s, average=0.001 s; distance=30 kB, estimate=4089 kB; lsn=0/64F1290, redo lsn=0/64F1258
+2025-09-29 00:04:44.491 UTC [9927] LOG:  starting PostgreSQL 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-09-29 00:04:44.491 UTC [9927] LOG:  listening on IPv6 address "::1", port 5434
+2025-09-29 00:04:44.492 UTC [9927] LOG:  listening on IPv4 address "127.0.0.1", port 5434
+2025-09-29 00:04:44.493 UTC [9927] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5434"
+2025-09-29 00:04:44.500 UTC [9942] LOG:  database system was interrupted; last known up at 2025-09-27 07:56:49 UTC
+2025-09-29 00:04:44.682 UTC [9942] LOG:  database system was not properly shut down; automatic recovery in progress
+2025-09-29 00:04:44.687 UTC [9942] LOG:  redo starts at 0/64F1258
+2025-09-29 00:04:44.687 UTC [9942] LOG:  invalid record length at 0/64F1340: expected at least 24, got 0
+2025-09-29 00:04:44.687 UTC [9942] LOG:  redo done at 0/64F1308 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2025-09-29 00:04:44.691 UTC [9940] LOG:  checkpoint starting: end-of-recovery immediate wait
+2025-09-29 00:04:44.699 UTC [9940] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.001 s, total=0.009 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/64F1340, redo lsn=0/64F1340
+2025-09-29 00:04:44.703 UTC [9927] LOG:  database system is ready to accept connections
+2025-09-29 00:04:47.728 UTC [10044] FATAL:  role "codespace" does not exist
+2025-09-29 00:04:48.270 UTC [10076] ERROR:  database "nebolla" already exists
+2025-09-29 00:04:48.270 UTC [10076] STATEMENT:  CREATE DATABASE nebolla;
+2025-09-29 00:23:02.102 UTC [19143] FATAL:  lock file "postmaster.pid" already exists
+2025-09-29 00:23:02.102 UTC [19143] HINT:  Is another postmaster (PID 9927) running in data directory "/workspaces/neb-platform/neb-platform/.localpg/data"?
+2025-09-29 00:23:03.257 UTC [19199] FATAL:  role "codespace" does not exist
+2025-09-29 00:23:03.393 UTC [19241] ERROR:  database "nebolla" already exists
+2025-09-29 00:23:03.393 UTC [19241] STATEMENT:  CREATE DATABASE nebolla;
+2025-09-29 01:46:47.455 UTC [12630] LOG:  starting PostgreSQL 16.10 (Ubuntu 16.10-0ubuntu0.24.04.1) on x86_64-pc-linux-gnu, compiled by gcc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0, 64-bit
+2025-09-29 01:46:47.455 UTC [12630] LOG:  listening on IPv6 address "::1", port 5434
+2025-09-29 01:46:47.455 UTC [12630] LOG:  listening on IPv4 address "127.0.0.1", port 5434
+2025-09-29 01:46:47.457 UTC [12630] LOG:  listening on Unix socket "/tmp/.s.PGSQL.5434"
+2025-09-29 01:46:47.464 UTC [12633] LOG:  database system was interrupted; last known up at 2025-09-29 00:04:44 UTC
+2025-09-29 01:46:47.565 UTC [12633] LOG:  database system was not properly shut down; automatic recovery in progress
+2025-09-29 01:46:47.568 UTC [12633] LOG:  redo starts at 0/64F13B8
+2025-09-29 01:46:47.568 UTC [12633] LOG:  invalid record length at 0/64F13F0: expected at least 24, got 0
+2025-09-29 01:46:47.568 UTC [12633] LOG:  redo done at 0/64F13B8 system usage: CPU: user: 0.00 s, system: 0.00 s, elapsed: 0.00 s
+2025-09-29 01:46:47.572 UTC [12631] LOG:  checkpoint starting: end-of-recovery immediate wait
+2025-09-29 01:46:47.579 UTC [12631] LOG:  checkpoint complete: wrote 3 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.002 s, sync=0.001 s, total=0.009 s; sync files=2, longest=0.001 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/64F13F0, redo lsn=0/64F13F0
+2025-09-29 01:46:47.583 UTC [12630] LOG:  database system is ready to accept connections
+2025-09-29 01:46:49.756 UTC [12678] FATAL:  role "codespace" does not exist
+2025-09-29 01:46:50.246 UTC [12710] ERROR:  database "nebolla" already exists
+2025-09-29 01:46:50.246 UTC [12710] STATEMENT:  CREATE DATABASE nebolla;
+2025-09-29 02:46:48.465 UTC [12631] LOG:  checkpoint starting: time
+2025-09-29 02:46:48.977 UTC [12631] LOG:  checkpoint complete: wrote 6 buffers (0.0%); 0 WAL file(s) added, 0 removed, 0 recycled; write=0.503 s, sync=0.003 s, total=0.512 s; sync files=5, longest=0.003 s, average=0.001 s; distance=0 kB, estimate=0 kB; lsn=0/64F1788, redo lsn=0/64F1750

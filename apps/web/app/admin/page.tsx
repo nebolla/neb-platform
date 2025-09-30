@@ -1,4 +1,7 @@
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
+import type { Session } from "next-auth"
+import Link from "next/link"
+
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { PurchaseStatus } from "@prisma/client"
@@ -6,9 +9,15 @@ import { PurchaseStatus } from "@prisma/client"
 export const dynamic = "force-dynamic"
 
 export default async function AdminPage(){
-  const session = await getServerSession(authOptions)
-  if(!session || (session.user.role!=="SUPER_ADMIN" && session.user.role!=="ADMIN")){
-    return (<main style={{padding:"2rem"}}><p>Admins only. Please login with admin account.</p></main>)
+  const session = (await getServerSession(authOptions)) as Session | null
+  const isAdmin = !!(session?.user && (session.user as any).role && ((session.user as any).role === "SUPER_ADMIN" || (session.user as any).role === "ADMIN"))
+
+  if(!isAdmin){
+    return (
+      <main style={{padding:"2rem"}}>
+        <p>Admins only. Please login with admin account.</p>
+      </main>
+    )
   }
 
   const [purchases, withdrawals, vip, elite, wfee] = await Promise.all([
@@ -29,6 +38,10 @@ export default async function AdminPage(){
 
   return (
     <main style={{padding:"2rem", fontFamily:"ui-sans-serif"}}>
+      <p style={{ marginTop: 8 }}>
+        <Link href="/admin/pools">Pools (VIP/ELITE)</Link>
+      </p>
+
       <h1>Approvals Queue</h1>
       <p style={{margin:"8px 0"}}>
         VIP Pool: ${String(vip?.balance||0)} &nbsp; | &nbsp;
@@ -42,9 +55,9 @@ export default async function AdminPage(){
         {purchases.map(p=>(
           <li key={p.id} style={{border:"1px solid #ddd", padding:12, margin:"12px 0"}}>
             <b>{p.user.partnerId}</b> • ${String(p.amountUsd)} • {p.chain}
-            <div style={{marginTop:6}}>Proof: <a href={p.proofUrl} target="_blank">view</a></div>
+            <div style={{marginTop:6}}>Proof: <a href={`/api/proofs/view?key=${encodeURIComponent((p as any).proofKey || '')}`} target="_blank">view</a></div>
             <details style={{marginTop:6}}><summary>Preview</summary>
-              <img src={p.proofUrl} alt="proof" style={{maxWidth:240,border:"1px solid #eee",marginTop:6}} />
+              <img src={`/api/proofs/view?key=${encodeURIComponent((p as any).proofKey || '')}`} alt="proof" style={{maxWidth:240,border:"1px solid #eee",marginTop:6}} />
             </details>
             <form action={`/api/admin/purchases/${p.id}/approve`} method="post" style={{marginTop:8}}>
               <button style={{padding:"8px 12px", border:"1px solid #000"}}>Approve</button>
@@ -58,23 +71,13 @@ export default async function AdminPage(){
       <ul>
         {withdrawals.map(w=>(
           <li key={w.id} style={{border:"1px solid #ddd", padding:12, margin:"12px 0"}}>
-            <b>{w.user.partnerId}</b> • Request: ${String(w.amountReq)} • {w.chain} → { (w as any).toAddress }
+            <b>{w.user.partnerId}</b> • Request: ${String((w as any).amountReq)} • {w.chain} → {(w as any).toAddress}
             <form action={`/api/admin/withdrawals/${w.id}/approve`} method="post" style={{marginTop:8}}>
               <button style={{padding:"8px 12px", border:"1px solid #000"}}>Approve & Debit (5% fee)</button>
             </form>
           </li>
         ))}
       </ul>
-
-      <section style={{marginTop:24}}>
-        <h2>Broadcast Notification</h2>
-        <form action="/api/admin/notifications" method="post" style={{marginTop:8}}>
-          <input name="title" placeholder="Title" style={{display:"block",padding:8,margin:"6px 0"}} />
-          <textarea name="body" placeholder="Message" rows={4} style={{display:"block",width:"100%",padding:8,margin:"6px 0"}} />
-          <input type="hidden" name="audience" value="ALL" />
-          <button style={{padding:"8px 12px", border:"1px solid #000"}}>Publish</button>
-        </form>
-      </section>
     </main>
   )
 }

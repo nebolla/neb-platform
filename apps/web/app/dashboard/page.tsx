@@ -1,4 +1,4 @@
-import { getServerSession } from "next-auth"
+import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
@@ -6,8 +6,8 @@ import Link from "next/link"
 export const dynamic = "force-dynamic"
 
 export default async function Dashboard(){
-  const session = await getServerSession(authOptions)
-  if(!session){
+  const session = (await getServerSession(authOptions)) as import("next-auth").Session | null
+  if(!session || !session.user){
     return (<main style={{padding:"2rem"}}><p>Please <a href="/partner/login">login</a>.</p></main>)
   }
 

@@ -4,13 +4,21 @@
   "packageManager": "pnpm@10.17.1",
   "scripts": {
     "postinstall": "prisma generate --schema packages/db/schema.prisma || true",
-    "dev": "pnpm --filter web dev",
+
+    "dev": "pnpm --filter web dev -- --hostname 0.0.0.0 -p 3000",
+
     "build": "turbo build",
     "lint": "turbo lint",
     "typecheck": "turbo typecheck",
-    "db:start": "node -e \"const {spawnSync}=require('child_process');spawnSync(process.env.PGCTL||'/usr/lib/postgresql/16/bin/pg_ctl',['-D','.localpg/data','-o','-p 5434 -c listen_addresses=localhost -c unix_socket_directories=/tmp','-l','.localpg/logfile','start'],{stdio:'inherit'})\"",
-    "db:stop": "node -e \"const {spawnSync}=require('child_process');spawnSync(process.env.PGCTL||'/usr/lib/postgresql/16/bin/pg_ctl',['-D','.localpg/data','stop','-m','fast'],{stdio:'inherit'})\"",
-    "db:status": "pg_isready -h 127.0.0.1 -p 5434 || true && tail -n 5 .localpg/logfile || true",
+
+    "db:start": "pg_ctl -D .localpg/data -o \"-p 5434 -c listen_addresses=localhost -c unix_socket_directories=/tmp\" -l .localpg/logfile start",
+    "db:stop": "pg_ctl -D .localpg/data stop -m fast",
+    "db:status": "pg_isready -h 127.0.0.1 -p 5434 || tail -n 60 .localpg/logfile",
+
+    "db:migrate": "prisma migrate dev --schema packages/db/schema.prisma",
+    "db:generate": "prisma generate --schema packages/db/schema.prisma",
+    "db:studio": "prisma studio --schema packages/db/schema.prisma",
+
     "db:logs": "tail -n 200 .localpg/logfile"
   },
   "devDependencies": {
