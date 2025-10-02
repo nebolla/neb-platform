@@ -3,27 +3,28 @@ runtime: nodejs22
 
 build:
   commands:
-    build:
+    pre-build:
       - corepack enable && pnpm --version || true
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
+    build:
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
       - pnpm -C apps/web build
 
 run:
-  command: bash scripts/start-web.sh
-  command: cd apps/web && node node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
+  # शेल ऑपरेटर नहीं, बस एक ही कमांड. working dir बदलने के बजाय full path चलाओ:
+  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
-    port: 3000
+    port: 3000        # App Runner डिफ़ॉल्ट 8080 लेता है; हम 3000 पर चला रहे हैं
   env:
-    - name: NEXTAUTH_URL
-      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"
     - name: NODE_ENV
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
+    - name: NEXTAUTH_URL
+      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"
   secrets:
     - name: DATABASE_URL
-      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
+      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa"
     - name: NEXTAUTH_SECRET
-      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL
+      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL"
