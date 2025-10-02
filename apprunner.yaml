@@ -4,6 +4,7 @@ runtime: nodejs22
 build:
   commands:
     - corepack enable && pnpm --version || true
+    - printf 'dangerously-allow-all-builds=true\n' >> .npmrc     # 👈 नई लाइन
     - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
     - pnpm install --frozen-lockfile
     - pnpm -w prisma generate --schema packages/db/schema.prisma
