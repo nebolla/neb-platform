@@ -11,13 +11,15 @@ build:
       - pnpm -C apps/web build
 
 run:
-  # 👉 Next को सीधे apps/web प्रोजेक्ट-डिर से स्टार्ट कराओ (कोई `cd` नहीं)
-  command: node apps/web/node_modules/next/dist/bin/next start apps/web -p 3000 --hostname 0.0.0.0
+  command: >
+    node -e "require('http').createServer((req,res)=>{res.statusCode=200;res.end('ok')}).listen(process.env.PORT||3000,'0.0.0.0')"
   network:
-    port: 3000   # App Runner इस पोर्ट पर ट्रैफ़िक भेजेगा
+    port: 3000
   env:
     - name: NODE_ENV
       value: "production"
+    # (NEXTAUTH_URL अगर है तो रहने दें; नुकसान नहीं)
+  # secrets वैसे ही रहने दें; इस शिम को उनकी जरूरत नहीं, पर रहने देने से कोई दिक्कत नहीं।
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
     - name: NEXTAUTH_URL
