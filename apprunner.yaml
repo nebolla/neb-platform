@@ -3,15 +3,14 @@ runtime: nodejs22
 
 build:
   commands:
-    - corepack enable && pnpm --version || true
-    - printf 'dangerously-allow-all-builds=true\n' >> .npmrc     # 👈 नई लाइन
-    - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
-    - pnpm install --frozen-lockfile
-    - pnpm -w prisma generate --schema packages/db/schema.prisma
-    - pnpm -C apps/web build
+    build:
+      - corepack enable && pnpm --version || true
+      - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
+      - pnpm install --frozen-lockfile
+      - pnpm -w prisma generate --schema packages/db/schema.prisma
+      - pnpm -C apps/web build
 
 run:
-  # Next.js को 0.0.0.0:3000 पर bind
   command: cd apps/web && node node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
@@ -20,10 +19,8 @@ run:
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
-    - name: NEXTAUTH_URL
-      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"   # <-- Service URL
   secrets:
     - name: DATABASE_URL
-      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
     - name: NEXTAUTH_SECRET
-      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL
