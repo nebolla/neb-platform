@@ -3,29 +3,28 @@ runtime: nodejs22
 
 build:
   commands:
-    build:
+    pre-build:
       - corepack enable && pnpm --version || true
+    build:
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
       - pnpm -C apps/web build
 
 run:
-  command: >
-    node -e "require('http').createServer((req,res)=>{res.statusCode=200;res.end('ok')}).listen(process.env.PORT||3000,'0.0.0.0')"
+  # नोट: यहाँ कोई `cd ... &&` नहीं — एक ही कमांड, बिना shell chaining
+  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
   env:
     - name: NODE_ENV
       value: "production"
-    # (NEXTAUTH_URL अगर है तो रहने दें; नुकसान नहीं)
-  # secrets वैसे ही रहने दें; इस शिम को उनकी जरूरत नहीं, पर रहने देने से कोई दिक्कत नहीं।
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
     - name: NEXTAUTH_URL
-      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"  # अभी के Service URL से मैच रखें
+      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"
   secrets:
     - name: DATABASE_URL
-      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
     - name: NEXTAUTH_SECRET
-      value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL
