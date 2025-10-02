@@ -15,6 +15,8 @@ run:
   network:
     port: 3000
   env:
+    - name: NEXTAUTH_URL
+      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"
     - name: NODE_ENV
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
