@@ -3,26 +3,25 @@ runtime: nodejs22
 
 build:
   commands:
-    pre-build:
+    build:
       - corepack enable && pnpm --version || true
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
-    build:
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
       - pnpm -C apps/web build
 
 run:
-  # शेल ऑपरेटर नहीं, बस एक ही कमांड. working dir बदलने के बजाय full path चलाओ:
-  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
+  # 👉 Next को सीधे apps/web प्रोजेक्ट-डिर से स्टार्ट कराओ (कोई `cd` नहीं)
+  command: node apps/web/node_modules/next/dist/bin/next start apps/web -p 3000 --hostname 0.0.0.0
   network:
-    port: 3000        # App Runner डिफ़ॉल्ट 8080 लेता है; हम 3000 पर चला रहे हैं
+    port: 3000   # App Runner इस पोर्ट पर ट्रैफ़िक भेजेगा
   env:
     - name: NODE_ENV
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
     - name: NEXTAUTH_URL
-      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"
+      value: "https://irw3nuvwzf.us-east-1.awsapprunner.com"  # अभी के Service URL से मैच रखें
   secrets:
     - name: DATABASE_URL
       value-from: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa"
