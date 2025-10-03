@@ -15,9 +15,9 @@ build:
       - pnpm build
 
 run:
-  command: pnpm -C apps/web start
+  command: pnpm start
   network:
     port: 3000
 
-healthcheck:
-  path: /api/health
+  runtime_environment_variables:
+    NODE_ENV: production
