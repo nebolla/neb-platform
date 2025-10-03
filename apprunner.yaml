@@ -12,12 +12,23 @@ build:
     build:
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
       - pnpm install --frozen-lockfile
-      - pnpm build
+      - pnpm -w prisma generate --schema packages/db/schema.prisma
+      - pnpm -C apps/web build --no-lint
 
 run:
-  command: pnpm start
+  # Next.js को 0.0.0.0:3000 पर bind कराओ; App Runner port=3000 से मैच
+  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
-
-  runtime_environment_variables:
-    NODE_ENV: production
+  env:
+    - name: NODE_ENV
+      value: "production"
+    - name: NEXT_TELEMETRY_DISABLED
+      value: "1"
+    - name: NEXTAUTH_URL
+      value: "https://m3azfvpjb8.us-east-1.awsapprunner.com"
+  secrets:
+    - name: DATABASE_URL
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
+    - name: NEXTAUTH_SECRET
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL
