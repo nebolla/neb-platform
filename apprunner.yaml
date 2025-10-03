@@ -3,14 +3,17 @@ runtime: nodejs22
 
 build:
   commands:
-    - corepack enable && pnpm --version || true
-    - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
-    - pnpm install --frozen-lockfile
-    - pnpm -w prisma generate --schema packages/db/schema.prisma
-    - pnpm -C apps/web build
+    pre-build:
+      - corepack enable && pnpm --version || true
+    build:
+      - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
+      - pnpm install --frozen-lockfile
+      - pnpm -w prisma generate --schema packages/db/schema.prisma
+      - pnpm -C apps/web build
 
 run:
-  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
+  # cd की जरूरत नहीं; Next को project dir दे रहे हैं:
+  command: node apps/web/node_modules/next/dist/bin/next start apps/web -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
   env:
@@ -20,6 +23,6 @@ run:
       value: "1"
   secrets:
     - name: DATABASE_URL
-      value: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
     - name: NEXTAUTH_SECRET
-      value: "arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL"
+      value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/NEXTAUTH_SECRET-9jHrOL
