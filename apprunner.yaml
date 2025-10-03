@@ -3,12 +3,12 @@ runtime: nodejs22
 
 build:
   commands:
-    pre-build:
+        pre-build:
       - corepack enable && pnpm --version || true
       - mkdir -p apps/web
       - rm -f apps/web/next.config.*
-      - printf "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs
-      - printf "**/*" > apps/web/.eslintignore
+      - 'printf "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs'
+      - 'printf "**/*" > apps/web/.eslintignore'
     build:
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
       - pnpm install --frozen-lockfile
