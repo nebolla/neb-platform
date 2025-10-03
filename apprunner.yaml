@@ -6,16 +6,13 @@ build:
     pre-build:
       - corepack enable && pnpm --version || true
       - mkdir -p apps/web
-      # 👇 बिल्ड‑अनब्लॉकर: किसी भी existing next.config.* को हटाकर ignore वाला config लिखो
       - rm -f apps/web/next.config.*
       - printf "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs
-      # 👇 eslint को पूरी repo पर शांत रखने के लिए
       - printf "**/*" > apps/web/.eslintignore
     build:
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
-      # 👇 एक और सेफ़्टी नेट: लिंट को CLI से भी ऑफ कर दो
       - pnpm -C apps/web build --no-lint
 
 run:
