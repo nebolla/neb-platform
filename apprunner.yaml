@@ -4,21 +4,14 @@ runtime: nodejs22
 build:
   commands:
     pre-build:
-      - corepack enable && pnpm --version || true
-      - mkdir -p apps/web
-      - rm -f apps/web/next.config.*
-      - >-
-        sh -lc 'printf "%s" "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs'
-      - 'printf "**/*" > apps/web/.eslintignore'
-
-    build:
-      - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
+      - corepack enable || true
+      - pnpm -v || true
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
+    build:
       - pnpm -C apps/web build --no-lint
 
 run:
-  # Next.js को 0.0.0.0:3000 पर bind कराओ (App Runner network.port=3000 से match)
   command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
@@ -27,8 +20,7 @@ run:
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
-    - name: NEXTAUTH_URL
-      value: "https://placeholder.local"
+    # NOTE: NEXTAUTH_URL को हम CLI से सही URL पर सेट करेंगे (नीचे)
   secrets:
     - name: DATABASE_URL
       value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
