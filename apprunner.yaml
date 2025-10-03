@@ -31,7 +31,7 @@ run:
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
     - name: NEXTAUTH_URL
-      value: "https://placeholder.local"
+      value: "m3azfvpjb8.us-east-1.awsapprunner.com"
   secrets:
     - name: DATABASE_URL
       value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
