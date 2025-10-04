@@ -9,24 +9,15 @@ build:
       - node -v && pnpm -v || true
       - mkdir -p apps/web
       - rm -f apps/web/next.config.*
-      # Generate next.config.mjs with lint/TS disabled (YAML-safe heredoc)
-      - |
-        cat > apps/web/next.config.mjs <<'EOF'
-        export default {
-          eslint: { ignoreDuringBuilds: true },
-          typescript: { ignoreBuildErrors: true }
-        };
-        EOF
-      - printf '%s' '**/*' > apps/web/.eslintignore
+      - 'printf "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs'
+      - 'printf "**/*" > apps/web/.eslintignore'
     build:
-      # (Prefer committing deps; keep this only if you truly need it temporarily)
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
       - pnpm install --frozen-lockfile
       - pnpm -w prisma generate --schema packages/db/schema.prisma
       - pnpm -C apps/web build --no-lint
 
 run:
-  # No shell chaining; bind 0.0.0.0:3000 for App Runner
   command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
@@ -35,9 +26,7 @@ run:
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
-    # Use a placeholder here; we’ll patch it to the real URL after the first RUNNING state
-    - name: NEXTAUTH_URL
-      value: "https://placeholder.local"
+  # If you prefer declaring secrets here, keep these (they work with your existing ARNs):
   secrets:
     - name: DATABASE_URL
       value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
