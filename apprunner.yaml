@@ -4,31 +4,35 @@ runtime: nodejs22
 build:
   commands:
     pre-build:
-      - 'node -v && corepack enable || true'
-      - 'mkdir -p apps/web'
-      - 'rm -f apps/web/next.config.*'
-      - 'printf "export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };" > apps/web/next.config.mjs'
-      - 'printf "**/*" > apps/web/.eslintignore'
+      - corepack enable && pnpm --version || true
+      - mkdir -p apps/web
+      - rm -f apps/web/next.config.*
+      # Next.js को build में lint/type-check से मुक्त करने के लिए config फ़ाइल बनाते हैं
+      - node -e "const fs=require('fs');fs.writeFileSync('apps/web/next.config.mjs','export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };')"
+      - echo "**/*" > apps/web/.eslintignore
     build:
-      - 'pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0'
-      - 'pnpm install --frozen-lockfile'
-      - 'pnpm -w prisma generate --schema packages/db/schema.prisma'
-      - 'pnpm -C apps/web build --no-lint'
+      # जरूरत का पैकेज ensure कर दें (ephemeral install; repo छूना नहीं पड़े)
+      - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
+      - pnpm install --frozen-lockfile
+      - pnpm -w prisma generate --schema packages/db/schema.prisma
+      - pnpm -C apps/web build --no-lint
 
 run:
-  # Next.js को 0.0.0.0:3000 पर चलाएँ (App Runner network.port=3000)
-  command: 'node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0'
+  # 0.0.0.0:3000 पर Next.js start — App Runner network.port=3000 से match
+  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
 
+  # ---- Runtime envs (यहीं स्थायी कर दें) ----
   env:
     - name: NODE_ENV
       value: "production"
     - name: NEXT_TELEMETRY_DISABLED
       value: "1"
     - name: NEXTAUTH_URL
-      value: "https://hr6epnbzax.us-east-1.awsapprunner.com"  # ← आपका live URL
+      value: "https://hr6epnbzax.us-east-1.awsapprunner.com"  # <- तुम्हारे live URL से सेट
 
+  # ---- Secrets (जैसे पहले) ----
   secrets:
     - name: DATABASE_URL
       value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
