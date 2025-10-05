@@ -4,33 +4,21 @@ runtime: nodejs22
 build:
   commands:
     pre-build:
-      # Corepack/PNPM info (best-effort)
       - corepack enable && pnpm --version || true
-
-      # Ensure Next config disables lint/type errors during build
       - rm -f apps/web/next.config.*
-      - "node -e 'require(\"fs\").mkdirSync(\"apps/web\",{recursive:true}); require(\"fs\").writeFileSync(\"apps/web/next.config.mjs\",\"export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };\");'"
-
-      # Silence any repo-level ESLint by ignoring everything (build stage only)
-      - 'printf "**/*\n" > apps/web/.eslintignore'
-
+      - printf 'export default { eslint: { ignoreDuringBuilds: true }, typescript: { ignoreBuildErrors: true } };\n' > apps/web/next.config.mjs
+      - printf '**/*\n' > apps/web/.eslintignore
     build:
-      # Needed by your code (as per earlier builds)
+      # अगर यह पैकेज अभी lockfile में कमिट नहीं है तो बिल्ड-टाइम पर ऐड कर दो:
       - pnpm -C apps/web add @aws-sdk/s3-request-presigner@3.899.0
-
-      # Install deps & generate Prisma client (non-fatal if absent)
       - pnpm install --frozen-lockfile
-      - pnpm -w prisma generate --schema packages/db/schema.prisma || true
-
-      # Build Next.js (skip lint; types already ignored in next.config)
+      - pnpm -w prisma generate --schema packages/db/schema.prisma
       - pnpm -C apps/web build --no-lint
 
 run:
-  # Run Next from monorepo path; bind 0.0.0.0:3000 (App Runner expects port 3000)
-  command: node apps/web/node_modules/next/dist/bin/next start apps/web -p 3000 --hostname 0.0.0.0
+  command: node apps/web/node_modules/next/dist/bin/next start -p 3000 --hostname 0.0.0.0
   network:
     port: 3000
-
   env:
     - name: NODE_ENV
       value: "production"
@@ -38,8 +26,6 @@ run:
       value: "1"
     - name: NEXTAUTH_URL
       value: "https://hr6epnbzax.us-east-1.awsapprunner.com"
-
-  # Secrets from AWS Secrets Manager (as you used earlier)
   secrets:
     - name: DATABASE_URL
       value-from: arn:aws:secretsmanager:us-east-1:320819924019:secret:nebolla/DATABASE_URL-2QL4xa
